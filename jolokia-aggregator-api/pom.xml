@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>il3-amq-tooling</artifactId>
+        <groupId>org.swinchester.tools</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>jar</packaging>
+    <artifactId>jolokia-aggregator-api</artifactId>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- the version of the BOM, defining all the dependency versions -->
+        <fuse.version>6.2.1.redhat-084</fuse.version>
+        <fabric8.version>2.2.0.redhat-079</fabric8.version>
+        <docker.maven.plugin.version>0.13.6</docker.maven.plugin.version>
+
+        <!-- Docker & Fabric8 Configs -->
+        <docker.from>jboss-fuse-6/fis-java-openshift:1.0</docker.from>
+        <fabric8.dockerUser>fabric8/</fabric8.dockerUser>
+        <docker.image>${fabric8.dockerUser}${project.artifactId}:${project.version}</docker.image>
+        <docker.port.container.jolokia>8778</docker.port.container.jolokia>
+        <camel.version>2.15.1.redhat-621084</camel.version>
+
+        <fabric8.version>2.2.100</fabric8.version>
+        <fabric8.useDeploymentConfig>true</fabric8.useDeploymentConfig>
+
+        <!-- Labels -->
+        <fabric8.label.app>jolokia-aggregator-api</fabric8.label.app>
+        <fabric8.label.group>api</fabric8.label.group>
+        <fabric8.label.project>jolokia-aggregator-api</fabric8.label.project>
+        <fabric8.iconRef>camel</fabric8.iconRef>
+
+        <fabric8.provider>org.swinchester</fabric8.provider>
+
+        <!-- Parameters -->
+        <fabric8.parameter.IS_TAG.value>latest</fabric8.parameter.IS_TAG.value>
+        <fabric8.parameter.IS_PULL_NAMESPACE.value>build</fabric8.parameter.IS_PULL_NAMESPACE.value>
+        <fabric8.parameter.REGISTRY.value>172.30.233.53:5000</fabric8.parameter.REGISTRY.value>
+        <fabric8.parameter.ROUTE_HOST_NAME.value>jolokia-aggregator.rhel-cdk.10.1.2.2.xip.io</fabric8.parameter.ROUTE_HOST_NAME.value>
+        <fabric8.parameter.GIT_URI.value>https://github.com/welshstew/jolokia-aggregator</fabric8.parameter.GIT_URI.value>
+        <fabric8.parameter.OPENSHIFT_MASTER_URI.value>https://10.1.2.2:8443</fabric8.parameter.OPENSHIFT_MASTER_URI.value>
+
+
+        <!-- Services -->
+        <fabric8.container.name>${project.artifactId}</fabric8.container.name>
+        <fabric8.iconRef>java</fabric8.iconRef>
+
+        <fabric8.service.jolokia-aggregator-svc.port>9090</fabric8.service.jolokia-aggregator-svc.port>
+        <fabric8.service.jolokia-aggregator-svc.containerPort>9090</fabric8.service.jolokia-aggregator-svc.containerPort>
+        <fabric8.service.il3-ldap-service.type>LoadBalancer</fabric8.service.il3-ldap-service.type>
+
+
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- fabric8 bom must be before fabric8 bom -->
+            <dependency>
+                <groupId>io.fabric8</groupId>
+                <artifactId>fabric8-project-bom-with-platform-deps</artifactId>
+                <version>${fabric8.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.fuse.bom</groupId>
+                <artifactId>jboss-fuse-parent</artifactId>
+                <version>${fuse.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.swinchester.tools</groupId>
+            <artifactId>jolokia-aggregator-groovy</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-spring</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-jackson</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-xstream</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-groovy</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-jetty</artifactId>
+            <version>${camel.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-servlet</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.groovy.modules.http-builder</groupId>
+            <artifactId>http-builder</artifactId>
+            <version>0.7.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.fabric8</groupId>
+            <artifactId>kubernetes-generator</artifactId>
+            <version>${fabric8.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>19.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- used for generating random message -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.4</version>
+        </dependency>
+
+        <!-- testing -->
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-test-spring</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.arquillian.junit</groupId>
+            <artifactId>arquillian-junit-container</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.fabric8</groupId>
+            <artifactId>fabric8-arquillian</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.5.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.6</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <!-- Generate Kube.yml -->
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>fabric8-maven-plugin</artifactId>
+                <version>${fabric8.version}</version>
+                <executions>
+                    <execution>
+                        <id>json</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>json</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>attach</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attach</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.7</version>
+                <executions>
+                    <execution>
+                        <id>copy-resource-one</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.basedir}/kube</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/classes</directory>
+                                    <includes>
+                                        <include>*.json</include>
+                                        <include>*.yml</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>hawt-app-maven-plugin</artifactId>
+                <version>${fabric8.version}</version>
+                <executions>
+                    <execution>
+                        <id>hawt-app</id>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                        <configuration>
+                            <javaMainClass>org.apache.camel.spring.Main</javaMainClass>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jolokia</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>${docker.maven.plugin.version}</version>
+                <configuration>
+                    <images>
+                        <image>
+                            <name>${docker.image}</name>
+                            <build>
+                                <from>${docker.from}</from>
+                                <assembly>
+                                    <basedir>/deployments</basedir>
+                                    <descriptorRef>hawt-app</descriptorRef>
+                                </assembly>
+                                <env>
+                                    <JAVA_LIB_DIR>/deployments/lib</JAVA_LIB_DIR>
+                                    <JAVA_MAIN_CLASS>org.apache.camel.spring.Main</JAVA_MAIN_CLASS>
+                                </env>
+                            </build>
+                        </image>
+                    </images>
+                </configuration>
+            </plugin>
+            <!-- allows the route to be ran via 'mvn exec:java' -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.4.0</version>
+                <configuration>
+                    <mainClass>org.apache.camel.spring.Main</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>f8-build</id>
+            <build>
+                <defaultGoal>clean install docker:build fabric8:json</defaultGoal>
+            </build>
+        </profile>
+        <profile>
+            <id>f8-deploy</id>
+            <properties>
+                <fabric8.imagePullPolicySnapshot>Always</fabric8.imagePullPolicySnapshot>
+                <fabric8.recreate>true</fabric8.recreate>
+            </properties>
+            <build>
+                <defaultGoal>clean install docker:build docker:push fabric8:json fabric8:apply</defaultGoal>
+            </build>
+        </profile>
+        <profile>
+            <id>f8-local-deploy</id>
+            <properties>
+                <fabric8.recreate>true</fabric8.recreate>
+            </properties>
+            <build>
+                <defaultGoal>clean install docker:build fabric8:json fabric8:apply</defaultGoal>
+            </build>
+        </profile>
+    </profiles>
+
+</project>
