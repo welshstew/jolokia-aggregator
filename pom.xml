@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.swinchester.tools</groupId>
-  <artifactId>il3-amq-tooling</artifactId>
+  <artifactId>jolokia-kube-tooling</artifactId>
   <version>1.0-SNAPSHOT</version>
   <modules>
     <module>jolokia-aggregator-groovy</module>
@@ -12,7 +12,7 @@
   </modules>
   <packaging>pom</packaging>
 
-  <name>il3-amq-tooling</name>
-  <description>il3-amq-tooling</description>
+  <name>jolokia-kube-tooling</name>
+  <description>jolokia-kube-tooling</description>
 
 </project>

@@ -16,6 +16,10 @@ class JsonAggregationStrategy implements AggregationStrategy{
     Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
 
         if(oldExchange == null){
+
+            def bodyList = []
+            bodyList << newExchange.in.body
+            newExchange.in.body = bodyList
             log.debug("new exchange : ${newExchange.in.body}")
             return newExchange
         }else{

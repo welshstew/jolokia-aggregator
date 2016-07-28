@@ -70,10 +70,7 @@ class JolokiaRequestProcessor implements Processor{
                 log.debug( "Got response: ${resp.statusLine}")
                 log.debug( "Content-Type: ${resp.headers.'Content-Type'}")
                 json << [broker:broker]
-
-                //make it a list here, just so it is easier later...
-                def singleItemList = [json]
-                exchange.in.body = singleItemList
+                exchange.in.body = json
                 log.debug("response: ${json}")
             }
 
@@ -89,8 +86,7 @@ class JolokiaRequestProcessor implements Processor{
                 log.debug( "Got response: ${resp.statusLine}")
                 log.debug( "Content-Type: ${resp.headers.'Content-Type'}")
                 json << [broker:broker]
-                def singleItemList = [json]
-                exchange.in.body = singleItemList
+                exchange.in.body = json
                 log.debug("response: ${json}")
             }
 

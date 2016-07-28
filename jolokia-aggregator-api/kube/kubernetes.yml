@@ -1,0 +1,193 @@
+---
+apiVersion: "v1"
+kind: "Template"
+labels: {}
+metadata:
+  annotations:
+    description: "jolokia-kube-tooling"
+    fabric8.jolokia-aggregator-api/iconUrl: "img/icons/java.svg"
+    fabric8.jolokia-aggregator-api/summary: "jolokia-kube-tooling"
+  labels: {}
+  name: "jolokia-aggregator-api"
+objects:
+- apiVersion: "v1"
+  kind: "Service"
+  metadata:
+    annotations: {}
+    labels:
+      app: "jolokia-aggregator-api"
+      project: "jolokia-aggregator-api"
+      provider: "org.swinchester"
+      version: "1.0-SNAPSHOT"
+      group: "api"
+    name: "jolokia-aggregator-svc"
+  spec:
+    deprecatedPublicIPs: []
+    externalIPs: []
+    ports:
+    - port: 9090
+      protocol: "TCP"
+      targetPort: 9090
+    selector:
+      app: "jolokia-aggregator-api"
+      project: "jolokia-aggregator-api"
+      provider: "org.swinchester"
+      group: "api"
+- apiVersion: "v1"
+  kind: "ImageStream"
+  metadata:
+    annotations: {}
+    labels: {}
+    name: "jolokia-aggregator-api"
+  spec:
+    dockerImageRepository: "${REGISTRY}/${IS_PULL_NAMESPACE}/jolokia-aggregator-api"
+    tags:
+    - annotations:
+        tags: "${IS_TAG}"
+      from:
+        kind: "ImageStreamTag"
+        name: "jolokia-aggregator-api"
+      name: "${IS_TAG}"
+- apiVersion: "v1"
+  kind: "BuildConfig"
+  metadata:
+    annotations: {}
+    labels:
+      app: "jolokia-aggregator-api"
+      project: "jolokia-aggregator-api"
+      version: "1.0.0-SNAPSHOT"
+      group: "api"
+    name: "jolokia-aggregator-api-bc"
+  spec:
+    output:
+      to:
+        kind: "ImageStreamTag"
+        name: "jolokia-aggregator-api:${IS_TAG}"
+    source:
+      git:
+        uri: "${GIT_URI}"
+      images: []
+      secrets: []
+      type: "Git"
+    strategy:
+      sourceStrategy:
+        env:
+        - name: "JAVA_MAIN_CLASS"
+          value: "org.apache.camel.spring.Main"
+        - name: "ARTIFACT_DIR"
+          value: "jolokia-aggregator-api/target"
+        - name: "HAWTAPP_VERSION"
+          value: "2.2.0.redhat-079"
+        from:
+          kind: "ImageStreamTag"
+          name: "fis-java-openshift:1.0"
+          namespace: "openshift"
+      type: "Source"
+    triggers:
+    - imageChange:
+        from:
+          kind: "ImageStreamTag"
+          name: "fis-java-openshift:1.0"
+          namespace: "openshift"
+      type: "ImageChange"
+- apiVersion: "v1"
+  kind: "DeploymentConfig"
+  metadata:
+    annotations: {}
+    labels:
+      project: "jolokia-aggregator-api"
+      provider: "org.swinchester"
+      version: "1.0-SNAPSHOT"
+      group: "api"
+    name: "jolokia-aggregator-api-dc"
+  spec:
+    replicas: 1
+    selector:
+      project: "jolokia-aggregator-api"
+      provider: "org.swinchester"
+      version: "1.0-SNAPSHOT"
+      group: "api"
+    strategy:
+      annotations: {}
+      labels: {}
+      type: "Recreate"
+    template:
+      metadata:
+        annotations: {}
+        labels:
+          app: "jolokia-aggregator-api"
+          project: "jolokia-aggregator-api"
+          provider: "org.swinchester"
+          version: "1.0-SNAPSHOT"
+          group: "api"
+      spec:
+        containers:
+        - args: []
+          command: []
+          env:
+          - name: "OPENSHIFT_MASTER_URI"
+            value: "${OPENSHIFT_MASTER_URI}"
+          - name: "KUBERNETES_NAMESPACE"
+            valueFrom:
+              fieldRef:
+                fieldPath: "metadata.namespace"
+          image: "${IS_PULL_NAMESPACE}/jolokia-aggregator-api:${IS_TAG}"
+          imagePullPolicy: "Always"
+          livenessProbe:
+            initialDelaySeconds: 30
+            tcpSocket:
+              port: 9090
+            timeoutSeconds: 60
+          name: "jolokia-aggregator-api"
+          ports:
+          - containerPort: 9090
+            name: "http"
+            protocol: "TCP"
+          - containerPort: 8787
+            name: "jolokia"
+            protocol: "TCP"
+          readinessProbe:
+            initialDelaySeconds: 30
+            tcpSocket:
+              port: 9090
+            timeoutSeconds: 1
+          volumeMounts: []
+        imagePullSecrets: []
+        nodeSelector: {}
+        restartPolicy: "Always"
+        volumes: []
+    triggers:
+    - type: "ConfigChange"
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - "jolokia-aggregator-api"
+        from:
+          kind: "ImageStreamTag"
+          name: "jolokia-aggregator-api:${IS_TAG}"
+          namespace: "${IS_PULL_NAMESPACE}"
+      type: "ImageChange"
+- apiVersion: "v1"
+  kind: "Route"
+  metadata:
+    annotations: {}
+    labels: {}
+    name: "jolokia-aggregator-api-route"
+  spec:
+    host: "${ROUTE_HOST_NAME}"
+    to:
+      kind: "Service"
+      name: "jolokia-aggregator-svc"
+parameters:
+- name: "OPENSHIFT_MASTER_URI"
+  value: "https://10.1.2.2:8443"
+- name: "IS_TAG"
+  value: "latest"
+- name: "GIT_URI"
+  value: "https://github.com/welshstew/jolokia-aggregator"
+- name: "REGISTRY"
+  value: "172.30.233.53:5000"
+- name: "ROUTE_HOST_NAME"
+  value: "jolokia-aggregator.rhel-cdk.10.1.2.2.xip.io"
+- name: "IS_PULL_NAMESPACE"
+  value: "build"
