@@ -1,4 +1,4 @@
-# Kube Jokokia Aggregator API
+# Kube Jolokia Aggregator API
 
 Simple Camel/Groovy API which will call multiple jolokia's and aggregate the result.
 
