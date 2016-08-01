@@ -33,6 +33,32 @@ Ad per the Jolokia API...  Just using the POST style at present.
 - [http://localhost:9090/jolokia/brokerstats](http://localhost:9090/jolokia/brokerstats) - this aggregates 2 broker stats
 - headers: Authorization, kube-label, and kube-namespace
 
+## Getting this stuff Running:
+
+```
+#create imagestreams for amq and java fis stuff 
+oc create -f https://raw.githubusercontent.com/jboss-fuse/application-templates/master/fis-image-streams.json -n openshift
+oc create -f https://raw.githubusercontent.com/jboss-openshift/application-templates/master/amq/amq62-basic.json -n openshift
+
+#create a new namespace and create a couple of brokers
+oc new-project playground
+oc new-app broker1 --from-template=amq62-basic
+oc new-app broker2 --from-template=amq62-basic
+
+#Create the template for this app
+oc create -f https://raw.githubusercontent.com/welshstew/jolokia-aggregator/master/jolokia-aggregator-api/kube/kubernetes.yml
+
+#get your locak registry ip
+oc get svc/docker-registry -n default | awk 'FNR >1 {print $2}'
+
+#edit the template for this app (ensure the registry svc IP is correct)
+oc edit templates/jolokia-aggregator-api
+
+#create the jolokia aggregator
+oc new-app --template=jolokia-aggregator-api
+```
+
+
 ## TODO
 
 - Just call jolokia on an endpoint (like with a running amq)
