@@ -42,20 +42,20 @@ oc create -f https://raw.githubusercontent.com/jboss-openshift/application-templ
 
 #create a new namespace and create a couple of brokers
 oc new-project playground
-oc new-app broker1 --from-template=amq62-basic
-oc new-app broker2 --from-template=amq62-basic
+oc new-app --template=amq62-basic --param=APPLICATION_NAME=broker1,MQ_USERNAME=admin,MQ_PASSWORD=admin
+oc new-app --template=amq62-basic --param=APPLICATION_NAME=broker2,MQ_USERNAME=admin,MQ_PASSWORD=admin
 
 #Create the template for this app
 oc create -f https://raw.githubusercontent.com/welshstew/jolokia-aggregator/master/jolokia-aggregator-api/kube/kubernetes.yml
 
-#get your locak registry ip
+#get your local registry ip
 oc get svc/docker-registry -n default | awk 'FNR >1 {print $2}'
 
 #edit the template for this app (ensure the registry svc IP is correct)
 oc edit templates/jolokia-aggregator-api
 
 #create the jolokia aggregator
-oc new-app --template=jolokia-aggregator-api
+oc new-app --template=jolokia-aggregator-api --param=REGISTRY=172.30.252.41:5000,IS_PULL_NAMESPACE=playground
 ```
 
 
