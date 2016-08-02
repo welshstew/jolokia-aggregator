@@ -42,8 +42,8 @@ oc create -f https://raw.githubusercontent.com/jboss-openshift/application-templ
 
 #create a new namespace and create a couple of brokers
 oc new-project playground
-oc new-app --template=amq62-basic --param=APPLICATION_NAME=broker1,MQ_USERNAME=admin,MQ_PASSWORD=admin
-oc new-app --template=amq62-basic --param=APPLICATION_NAME=broker2,MQ_USERNAME=admin,MQ_PASSWORD=admin
+oc new-app --template=amq62-basic --param=APPLICATION_NAME=broker1,MQ_USERNAME=admin,MQ_PASSWORD=admin,MQ_QUEUES=queue.one
+oc new-app --template=amq62-basic --param=APPLICATION_NAME=broker2,MQ_USERNAME=admin,MQ_PASSWORD=admin,MQ_QUEUES=queue.one
 
 #Create the template for this app
 oc create -f https://raw.githubusercontent.com/welshstew/jolokia-aggregator/master/jolokia-aggregator-api/kube/kubernetes.yml
@@ -56,8 +56,15 @@ oc edit templates/jolokia-aggregator-api
 
 #create the jolokia aggregator
 oc new-app --template=jolokia-aggregator-api --param=REGISTRY=172.30.252.41:5000,IS_PULL_NAMESPACE=playground
+
+#give the API the permissions to read the kubernetes API
+oc policy add-role-to-user view system:serviceaccount:playground:default -n playground
+
 ```
 
+# NEEDS FIXING
+
+- SVC/Route does not hook up correctly - metadata needs to be fixed...
 
 ## TODO
 
